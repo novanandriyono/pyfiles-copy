@@ -31,9 +31,21 @@ module.exports = function(options){
 				});
 			}
 
-			var pcopy = prosescopy(pyfilesResult,fromDir,toDir);
-			newFileMode(toDir);
-			return pcopy;
+			if(typeof options.cleanToDir == true){
+				if(fs.existsSync(toDir)){
+					fs.rmdirSync(toDir);
+				}
+			}
+
+			prosescopy(pyfilesResult,fromDir,toDir);
+
+			var results = {
+				'fromDir': toDir,
+				'formatFile': 'scss',
+				'scrFiles': false,
+			};
+
+			return pyfiles(results);
 }
 
 function prosescopy(pyfilesResult,fromDir,toDir){
