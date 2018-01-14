@@ -22,8 +22,8 @@ module.exports = function(options){
 			var srcFiles = options.srcFiles;
 			var pyfilesResult = pyfiles(options);
 			for(var i = 0, len1 = pyfilesResult.length; i < len1; i++){
-				var path = pyfilesResult[i];
-				fs.access(path,fs.constants.F_OK || fs.constants.R_OK || fs.constants.X_OK || fs.constants.W_OK,(err) => {
+				var pypath = pyfilesResult[i];
+				fs.access(pypath,fs.constants.F_OK || fs.constants.R_OK || fs.constants.X_OK || fs.constants.W_OK,(err) => {
 					if(err){
 						console.log(err);
 						return;
@@ -31,47 +31,38 @@ module.exports = function(options){
 				});
 			}
 
-			if(options.cleanToDir == true){
-				var basenameDir = toDir + path.sep + path.basename(fromDir);
-				if(fs.existsSync(basenameDir)){
-					fs.rmdir(basenameDir,(err) => {
-						if(err){
-							console.log(err);
-							return;
-						}
-					});
-				}
-			}
-
-			prosescopy(pyfilesResult,fromDir,toDir);
-
-			var results = {
-				'fromDir': toDir,
-				'formatFile': 'scss',
-				'scrFiles': false,
-			};
-
-			return pyfiles(results);
+			prosescopy(pyfilesResult,fromDir,toDir,options);
+			options.fromDir = toDir;
+			return pyfiles(options);
 }
 
-function prosescopy(pyfilesResult,fromDir,toDir){
+function prosescopy(pyfilesResult,fromDir,toDir,options){
+	var newDirMode = parseInt('0755',8);
+	var newFileMode = parseInt('0644',8);
+	if((typeof options.folderMode === 'string') && options.folderMode.length === 4){
+		newDirMode = parseInt(options.folderMode,8);
+	}
+	if((typeof options.fileMode === 'string') && options.fileMode.length === 4){
+		newFileMode = parseInt(options.fileMode,8);
+	}
 	for(var i = 0, len1 = pyfilesResult.length; i < len1; i++){
-		var newDirMode = parseInt('0755',8);
-		var newFileMode = parseInt('0644',8);
 		var oldFiles = path.normalize(pyfilesResult[i]);
 		var newDir = path.basename(fromDir);
 		var newDirBase = toDir + path.sep + newDir + path.sep;
 		var newFile = oldFiles.replace(path.normalize(fromDir),newDirBase);
 		if(!fs.existsSync(newDirBase)){
-			fs.mkdirSync(newDirBase,newDirMode);
+			fs.mkdirSync(newDirBase);
+			fs.chmodSync(newDirBase, newDirMode);
 		}
 		var newDir1 = path.dirname(newFile);
-		mkdirSyncP(newDir1);
+		mkdirSyncP(newDir1,newDirMode);
+		fs.chmodSync(newDir1, newDirMode);
 		fs.copyFileSync(oldFiles,newFile);
+		fs.chmodSync(newFile, newFileMode);
 	}
 }
 
-function mkdirSyncP(location) {
+function mkdirSyncP(location,newDirMode) {
     //https://stackoverflow.com/a/45287510/4949964
     let normalizedPath = path.normalize(location);
     let parsedPathObj = path.parse(normalizedPath);
@@ -82,21 +73,7 @@ function mkdirSyncP(location) {
         curDir = path.join(curDir, part);
         if (!fs.existsSync(curDir)) {
             fs.mkdirSync(curDir);
+            fs.chmodSync(curDir,newDirMode);
         }
     }
-}
-
-function newFileMode(toDir){
-	var fileMode = parseInt('0644',8);
-	var options = {
-		'fromDir': toDir,
-		'formatFile': 'scss',
-		'scrFiles': false
-	}
-	var results = pyfiles(options);
-	// console.log(results);
-	for(var i = 0, len1 = results.length; i < len1; i++){
-		var res = results[i];
-		fs.chmodSync(res, fileMode);
-	}
 }
