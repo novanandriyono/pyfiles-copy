@@ -31,9 +31,15 @@ module.exports = function(options){
 				});
 			}
 
-			if(typeof options.cleanToDir == true){
-				if(fs.existsSync(toDir)){
-					fs.rmdirSync(toDir);
+			if(options.cleanToDir == true){
+				var basenameDir = toDir + path.sep + path.basename(fromDir);
+				if(fs.existsSync(basenameDir)){
+					fs.rmdir(basenameDir,(err) => {
+						if(err){
+							console.log(err);
+							return;
+						}
+					});
 				}
 			}
 
