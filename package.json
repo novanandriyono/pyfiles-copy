@@ -13,6 +13,6 @@
   "author": "Novan Andriyono <evelynradtya@gmail.com>",
   "license": "UNLICENSED",
   "dependencies": {
-    "pyfiles": "^1.0.5"
+    "pyfiles": "^1.0.6"
   }
 }
