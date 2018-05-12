@@ -1,6 +1,6 @@
 {
   "name": "pyfiles-copy",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "implementing pyfiles with copy",
   "main": "index.js",
   "scripts": {
